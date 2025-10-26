@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs"));
+const openkore_parser_1 = require("./openkore-parser");
 // ===== HANDLERS IPC =====
 electron_1.ipcMain.handle('ping', () => {
     return 'pong from main process!';
@@ -59,6 +60,43 @@ electron_1.ipcMain.handle('list-files', async (event, folderPath) => {
         return { success: false, error: error.message };
     }
 });
+// ===== OpenKore Handlers =====
+electron_1.ipcMain.handle('openkore:parse-file', async (event, filePath) => {
+    try {
+        const config = openkore_parser_1.OpenKoreParser.parseFile(filePath);
+        return { success: true, config };
+    }
+    catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+electron_1.ipcMain.handle('openkore:parse-folder', async (event, folderPath) => {
+    try {
+        const configs = openkore_parser_1.OpenKoreParser.parseFolder(folderPath);
+        return { success: true, configs };
+    }
+    catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+electron_1.ipcMain.handle('openkore:save-file', async (event, filePath, config, useEquals) => {
+    try {
+        openkore_parser_1.OpenKoreParser.saveFile(filePath, config, useEquals);
+        return { success: true };
+    }
+    catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+electron_1.ipcMain.handle('openkore:list-files', async (event, folderPath) => {
+    try {
+        const files = openkore_parser_1.OpenKoreParser.listConfigFiles(folderPath);
+        return { success: true, files };
+    }
+    catch (error) {
+        return { success: false, error: error.message };
+    }
+});
 // ========================
 let mainWindow = null;
 function createWindow() {
@@ -76,7 +114,7 @@ function createWindow() {
     const isDev = !electron_1.app.isPackaged;
     if (isDev) {
         mainWindow.loadURL('http://localhost:4200');
-        mainWindow.webContents.openDevTools();
+        //mainWindow.webContents.openDevTools();
     }
     else {
         mainWindow.loadFile(path.join(__dirname, '../dist/browser/index.html'));
