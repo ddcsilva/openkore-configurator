@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  // Aqui vamos expor as APIs depois
-  ping: () => ipcRenderer.invoke('ping')
+  ping: () => ipcRenderer.invoke('ping'),
+  readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
+  listFiles: (folderPath: string) => ipcRenderer.invoke('list-files', folderPath)
 });

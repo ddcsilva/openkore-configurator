@@ -35,6 +35,31 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const path = __importStar(require("path"));
+const fs = __importStar(require("fs"));
+// ===== HANDLERS IPC =====
+electron_1.ipcMain.handle('ping', () => {
+    return 'pong from main process!';
+});
+electron_1.ipcMain.handle('read-file', async (event, filePath) => {
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        return { success: true, content };
+    }
+    catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+electron_1.ipcMain.handle('list-files', async (event, folderPath) => {
+    try {
+        const files = fs.readdirSync(folderPath);
+        const txtFiles = files.filter(f => f.endsWith('.txt'));
+        return { success: true, files: txtFiles };
+    }
+    catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+// ========================
 let mainWindow = null;
 function createWindow() {
     mainWindow = new electron_1.BrowserWindow({
